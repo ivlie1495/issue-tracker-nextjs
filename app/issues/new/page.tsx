@@ -1,71 +1,20 @@
-'use client'
+import { Metadata } from 'next'
+import dynamic from 'next/dynamic'
 
-import { useState } from 'react'
-import axios from 'axios'
-import { useRouter } from 'next/navigation'
-import { Button, Callout, Text, TextField } from '@radix-ui/themes'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import SimpleMDE from 'react-simplemde-editor'
+import IssueFormSkeleton from '@/app/issues/_components/IssueFormSkeleton'
 
-import { createIssueSchema } from '@/app/validationSchema'
-import 'easymde/dist/easymde.min.css'
-import ErrorMessage from '@/app/components/ErrorMessage'
-import Spinner from '@/app/components/Spinner'
-
-type IssueForm = z.infer<typeof createIssueSchema>
+const IssueForm = dynamic(() => import('@/app/issues/_components/IssueForm'), {
+  ssr: false,
+  loading: () => <IssueFormSkeleton />,
+})
 
 const NewIssuePage = () => {
-  const router = useRouter()
-  const [isSubmiting, setIsSubmiting] = useState(false)
-  const [error, setError] = useState('')
-  const {
-    control,
-    formState: { errors },
-    register,
-    handleSubmit,
-  } = useForm<IssueForm>({
-    resolver: zodResolver(createIssueSchema),
-  })
+  return <IssueForm />
+}
 
-  const onSubmit = handleSubmit(async (data) => {
-    try {
-      setIsSubmiting(true)
-      await axios.post('/api/issues', data)
-      router.push('/issues')
-    } catch (error) {
-      setIsSubmiting(false)
-      setError('An unexpected error occured.')
-    }
-  })
-
-  return (
-    <div className="max-w-xl">
-      {error && (
-        <Callout.Root color="red" className="mb-5">
-          <Callout.Text>{error}</Callout.Text>
-        </Callout.Root>
-      )}
-      <form className="space-y-3" onSubmit={onSubmit}>
-        <TextField.Root>
-          <TextField.Input placeholder="Title" {...register('title')} />
-        </TextField.Root>
-        <ErrorMessage>{errors.title?.message}</ErrorMessage>
-        <Controller
-          name="description"
-          control={control}
-          render={({ field }) => (
-            <SimpleMDE placeholder="Description" {...field} />
-          )}
-        />
-        <ErrorMessage>{errors.description?.message}</ErrorMessage>
-        <Button disabled={isSubmiting}>
-          Submit New Issue {isSubmiting && <Spinner />}
-        </Button>
-      </form>
-    </div>
-  )
+export const metadata: Metadata = {
+  title: 'Issue Tracker - Add Issue',
+  description: 'Adding new issue to project',
 }
 
 export default NewIssuePage
