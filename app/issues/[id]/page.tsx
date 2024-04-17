@@ -1,4 +1,3 @@
-import { Metadata } from 'next'
 import { Box, Flex, Grid } from '@radix-ui/themes'
 import { notFound } from 'next/navigation'
 import { getServerSession } from 'next-auth'
